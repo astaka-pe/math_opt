@@ -2,6 +2,8 @@ import pulp
 import pandas as pd
 import time
 
+MAX_LOWERBOUND = 0.1313
+
 cust_df = pd.read_csv("data/customers.csv")
 prob_df = pd.read_csv("data/visit_probability.csv")
 
@@ -14,7 +16,7 @@ M = [1, 2, 3]
 xsm = {}
 for s in S:
     for m in M:
-        xsm[s,m] = pulp.LpVariable(name=f"xsm({s}, {m})", cat="Continuous")
+        xsm[s,m] = pulp.LpVariable(name=f"xsm({s}, {m})", lowBound=0, upBound=1, cat="Continuous")
 
 # (2)
 for s in S:
@@ -37,7 +39,8 @@ problem += pulp.lpSum(Cm[m] * Ns[s] * Psm[s,m] * xsm[s,m] for s in S for m in [2
 # (5)
 for s in S:
     for m in M:
-        problem += xsm[s,m] >= 0.1
+        # problem += xsm[s,m] >= 0.1
+        problem += xsm[s,m] >= MAX_LOWERBOUND
 
 # solve
 time_start = time.time()
